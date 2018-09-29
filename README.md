@@ -5,7 +5,7 @@ This is a small PHP-Class which can help you to validate a scheme of a url.
 ## Installation
 
 ````text
-composer require basteyy/UrlSchemeValidator
+composer require basteyy/url-scheme-validator
 ````
 
 ## Usage
