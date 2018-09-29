@@ -1,0 +1,12 @@
+{
+  "name": "basteyy/UrlSchemeValidator",
+  "description": "A PHP Clas for validating a scheme of a url",
+  "homepage": "https://meagainsttheweb.de",
+  "type": "",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "basteyy\\UrlSchemeValidator\\": "src"
+    }
+  }
+}
