@@ -1,4 +1,4 @@
-#UrlSchemeValidator
+# UrlSchemeValidator
 
 This is a small PHP-Class which can help you to validate a scheme of a url. 
 
