@@ -2,14 +2,15 @@
   "name": "basteyy/url-scheme-validator",
   "description": "A PHP Clas for validating a scheme of a url",
   "homepage": "https://meagainsttheweb.de",
-  "type": "",
+  "type": "library",
   "license": "MIT",
+  "version": "1.0.0",
   "autoload": {
     "psr-4": {
       "basteyy\\UrlSchemeValidator\\": "src"
-    },    
-    "require": {
-        "php": "^5.3.3 || ^7.0"
     }
+  },
+  "require": {
+    "php": "^5.3.3 || ^7.0"
   }
 }
