@@ -1,13 +1,18 @@
 <?php
-
 namespace basteyy\UrlSchemeValidator;
 
 use basteyy\UrlSchemeValidator\Exceptions\RuntimeException;
 
 class UrlSchemeValidator
 {
+    /**
+     * @var null Array for all the passed urls
+     */
     private $urls = null;
 
+    /**
+     * @var array The default set of data for a url
+     */
     private $urlsDataDefaults = [
         'checked' => false,
         'scheme' => null,
@@ -15,10 +20,17 @@ class UrlSchemeValidator
         'modified' => null
     ];
 
+    /**
+     * @var string The default scheme if self::$forcedDefaultScheme is true and the url has no scheme
+     */
     private $defaultScheme = 'http';
 
     /**
-     * Fallback port to scheme data
+     * @var bool Force the defaultscheme self::$forceDefaultScheme
+     */
+    private $forceDefaultScheme = false;
+
+    /**
      * @var array Port to scheme data
      */
     private $defaultPortToSchemeMap = [
@@ -29,8 +41,15 @@ class UrlSchemeValidator
         20 => 'ftp'
     ];
 
+    /**
+     * @var array Maps ports to schemes
+     */
     private $portToSchemeMap = [];
 
+    /**
+     * @var string If the url shows no scheme and the optopns $forceDefaultScheme is false, than this string will
+     * shown as the scheme
+     */
     private static $unknownSchemeName = 'UNKNOWN';
 
     /**
@@ -45,8 +64,8 @@ class UrlSchemeValidator
         }
 
         // Try to load the default ressource for port to scheme mapping
-        if(is_file(dirname(__DIR__) . '/Ressources/PortSchemeDatabase.php') ) {
-            $this->portToSchemeMap = include dirname(__DIR__) . '/Ressources/PortSchemeDatabase.php';
+        if(is_file(dirname(__DIR__) . '/src/Ressources/PortSchemeDatabase.php') ) {
+            $this->portToSchemeMap = include dirname(__DIR__) . '/src/Ressources/PortSchemeDatabase.php';
         } else {
             $this->portToSchemeMap = $this->defaultPortToSchemeMap;
         }
@@ -80,6 +99,7 @@ class UrlSchemeValidator
     public function setUrl($url)
     {
         $this->urls[$url] = $this->urlsDataDefaults;
+        $this->urls[$url]['original'] = $url;
     }
 
     /**
@@ -94,12 +114,19 @@ class UrlSchemeValidator
 
     /**
      * Set a new default scheme
-     *
      * @param $scheme string The new default scheme
      */
     public function setDefaultScheme($scheme)
     {
         $this->defaultScheme = $scheme;
+    }
+
+    /**
+     * @param bool $state State of forcing the default scheme
+     */
+    public function forceDefaultScheme(bool $state = true)
+    {
+        $this->forceDefaultScheme = $state;
     }
 
     /**
@@ -109,14 +136,18 @@ class UrlSchemeValidator
     public function getScheme($url)
     {
         if (!$url) {
-            if (!end($this->urls)) {
+            if (!$this->urls) {
                 throw new RuntimeException('A url is missing');
             }
 
-            $url = end($this->urls);
+            $url = end($this->urls)['original'];
         }
 
-        if (!$this->urlData[$url]['checked']) {
+        if (!isset($this->urls[$url])) {
+            $this->setUrl($url);
+        }
+
+        if (!$this->urls[$url]['checked']) {
             $this->validate($url);
         }
 
@@ -132,24 +163,31 @@ class UrlSchemeValidator
         return $this->urls;
     }
 
+    /**
+     * Returns the url including a scheme
+     * @param null $url
+     * @return string url including the scheme
+     * @throws RuntimeException
+     */
     public function getUrl($url = null)
     {
         if (!$url) {
-            if (!end($this->urls)) {
+            if (!$this->urls) {
                 throw new RuntimeException('A url is missing');
             }
 
-            $url = end($this->urls);
+            $url = end($this->urls)['original'];
         }
 
-        if (!$this->urlData[$url]['checked']) {
+        if (!isset($this->urls[$url])) {
+            $this->setUrl($url);
+        }
+
+        if (!$this->urls[$url]['checked']) {
             $this->validate($url);
         }
 
-        return $this->urls[$url]['modfied'];
-
-
-
+        return $this->urls[$url]['modified'];
     }
 
     /**
@@ -161,14 +199,18 @@ class UrlSchemeValidator
     public function isWebScheme($url = null)
     {
         if (!$url) {
-            if (!end($this->urls)) {
+            if (!$this->urls) {
                 throw new RuntimeException('A url is missing');
             }
 
-            $url = end($this->urls);
+            $url = end($this->urls)['original'];
         }
 
-        if (!$this->urlData[$url]['checked']) {
+        if (!isset($this->urls[$url])) {
+            $this->setUrl($url);
+        }
+
+        if (!$this->urls[$url]['checked']) {
             $this->validate($url);
         }
 
@@ -201,10 +243,20 @@ class UrlSchemeValidator
         ];
 
         // create a modifies version of the url
-        if ('//' == substr($url, 0, 2) && self::$unknownSchemeName != $genericScheme ) {
-            $this->urls[$url] = [
-                'modified' => $genericScheme . $url
-            ];
+        if ('//' == substr($url, 0, 2) ) {
+
+            if(self::$unknownSchemeName != $genericScheme) {
+
+                $this->urls[$url] = [
+                    'modified' => $genericScheme .':' . $url
+                ];
+
+            } elseif($this->forceDefaultScheme){
+
+                $this->urls[$url] = [
+                    'modified' => $this->defaultScheme .':' . $url
+                ];
+            }
         }
 
     }
