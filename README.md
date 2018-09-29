@@ -84,5 +84,6 @@ echo $validator->getUrl(); // Returns file://www.example.com
 
 // Validate direct for web (only http and https)
 var_dump($validator->isWebScheme()); // Returns false in this case (case now its file)
+var_dump($validator->isWebScheme('https://example.com')); // Returns true
 
 ```
